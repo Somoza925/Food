@@ -1,34 +1,22 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Text} from 'react-native';
-import SearchBar from '../components/SearchBar';
-import yelp from '../api/yelp';
+import SearchBar from '../components/SearchBar'; 
+import useResults from '../hooks/useResults'; // CUSTOM HOOK that provides searchApi, results which is the array of businesses, and an error message
+import ResultsList from '../components/ResultsList';
 
 
-const SearchScreen = () => {
-
+const SearchScreen = () => { 
     const[term, setTerm] = useState('');
-    const[results, setResults] = useState([]);
-    const[errorMessage, setErrorMessage] = useState('');
+    const[searchApi, results, errorMessage] = useResults();
 
-    const searchApi = async (searchTerm) => {
-        console.log('hi there');
-        try {
-            const response = await yelp.get('/search', {
-                params: {
-                    limit: 50,
-                    term: searchTerm,
-                    location: 'miami'
-                }
-            });
-            setResults(response.data.businesses);
-        } catch (err){
-            setErrorMessage('Something went wrong! :(');
-        }
+    const filterResultsByPrice = (price) => {
+        // price === $ || $$ || $$$
+        return results.filter(results => {
+            return results.price === price;
+        })
     };
+    console.log(results);
 
-    // Call search api when component is first rendered
-    // BAD CODE!! 
-    // searchApi('pasta');
 
     return <View>
         <SearchBar 
@@ -38,6 +26,9 @@ const SearchScreen = () => {
         />
         {errorMessage ? <Text>{errorMessage}</Text> : null}
         <Text>We have found {results.length} results</Text>
+        <ResultsList results = {filterResultsByPrice('$')} title = "Cost Effective"/>
+        <ResultsList results = {filterResultsByPrice('$$')} title = "Bit Pricier"/>
+        <ResultsList results = {filterResultsByPrice('$$$')} title = "Big Money Baller"/>
     </View>
 }
 
